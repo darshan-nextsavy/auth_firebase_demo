@@ -150,6 +150,8 @@ class _UserRequestedPageState extends State<UserRequestedPage>
                                           itemCount: dataList.length,
                                           itemBuilder: (context, index) {
                                             final data = dataList[index].data();
+                                            final docId =
+                                                dataList[index].reference.id;
                                             final List reqList =
                                                 data['request'];
                                             return Card(
@@ -181,14 +183,87 @@ class _UserRequestedPageState extends State<UserRequestedPage>
                                                       return Row(
                                                         children: [
                                                           Text(ele['uid']),
-                                                          IconButton(
-                                                              onPressed: () {},
-                                                              icon: const Icon(
-                                                                  Icons.check)),
-                                                          IconButton(
-                                                              onPressed: () {},
-                                                              icon: const Icon(
-                                                                  Icons.close)),
+                                                          ele['isAccept'] ==
+                                                                  "reject"
+                                                              ? Text("  Reject")
+                                                              : ele['isAccept'] ==
+                                                                      "accept"
+                                                                  ? Text(
+                                                                      "  Book")
+                                                                  : Row(
+                                                                      children: [
+                                                                        IconButton(
+                                                                            onPressed:
+                                                                                () async {
+                                                                              final userSnapshot = await FirebaseFirestore.instance.collection("users").doc(ele['uid']).get();
+                                                                              final List rList = userSnapshot.data()!['request'];
+
+                                                                              final List updateRequestList = reqList.map((e) {
+                                                                                if (e['uid'] == ele['uid']) {
+                                                                                  return {
+                                                                                    "uid": e['uid'],
+                                                                                    "isAccept": "accept"
+                                                                                  };
+                                                                                }
+                                                                                return e;
+                                                                              }).toList();
+
+                                                                              final List updateRequirementList = rList.map((e) {
+                                                                                if (e['requirementId'] == docId) {
+                                                                                  return {
+                                                                                    "requirementId": e['requirementId'],
+                                                                                    "isAccepted": "accept"
+                                                                                  };
+                                                                                }
+                                                                                return e;
+                                                                              }).toList();
+
+                                                                              await FirebaseFirestore.instance.collection("users").doc(ele['uid']).update({
+                                                                                "request": updateRequirementList
+                                                                              });
+                                                                              await FirebaseFirestore.instance.collection("requirements").doc(docId).update({
+                                                                                "status": "book",
+                                                                                "request": updateRequestList
+                                                                              });
+                                                                            },
+                                                                            icon:
+                                                                                const Icon(Icons.check)),
+                                                                        IconButton(
+                                                                            onPressed:
+                                                                                () async {
+                                                                              final userSnapshot = await FirebaseFirestore.instance.collection("users").doc(ele['uid']).get();
+                                                                              final List rList = userSnapshot.data()!['request'];
+                                                                              final List updateRequestList = reqList.map((e) {
+                                                                                if (e['uid'] == ele['uid']) {
+                                                                                  return {
+                                                                                    "uid": e['uid'],
+                                                                                    "isAccept": "reject"
+                                                                                  };
+                                                                                }
+                                                                                return e;
+                                                                              }).toList();
+
+                                                                              final List updateRequirementList = rList.map((e) {
+                                                                                if (e['requirementId'] == docId) {
+                                                                                  return {
+                                                                                    "requirementId": e['requirementId'],
+                                                                                    "isAccepted": "reject"
+                                                                                  };
+                                                                                }
+                                                                                return e;
+                                                                              }).toList();
+
+                                                                              await FirebaseFirestore.instance.collection("users").doc(ele['uid']).update({
+                                                                                "request": updateRequirementList
+                                                                              });
+                                                                              await FirebaseFirestore.instance.collection("requirements").doc(docId).update({
+                                                                                "request": updateRequestList
+                                                                              });
+                                                                            },
+                                                                            icon:
+                                                                                const Icon(Icons.close)),
+                                                                      ],
+                                                                    ),
                                                         ],
                                                       );
                                                     })

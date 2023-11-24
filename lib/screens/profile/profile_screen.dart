@@ -140,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void logout() async {
     await FirebaseAuth.instance.signOut();
-    Get.offAll((_) => const PhoneLoginScreen());
+    Get.offAll(const PhoneLoginScreen());
     // GoRouter.of(context).replaceNamed(AppRouteConstant.phoneLogin);
   }
 
