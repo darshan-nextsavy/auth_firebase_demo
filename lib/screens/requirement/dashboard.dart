@@ -20,18 +20,18 @@ class _DashboardState extends State<Dashboard> {
   List<DocumentSnapshot> posts = [];
 
   // comment when driver is login
-  Stream<QuerySnapshot> requirementsStream = FirebaseFirestore.instance
-      .collection("requirements")
-      .where("status", whereIn: ["active"])
-      .where("hasPostedByUser", isEqualTo: false)
-      .snapshots();
-
-  // comment when user is login
   // Stream<QuerySnapshot> requirementsStream = FirebaseFirestore.instance
   //     .collection("requirements")
   //     .where("status", whereIn: ["active"])
-  //     .where("hasPostedByUser", isEqualTo: true)
+  //     .where("hasPostedByUser", isEqualTo: false)
   //     .snapshots();
+
+  // comment when user is login
+  Stream<QuerySnapshot> requirementsStream = FirebaseFirestore.instance
+      .collection("requirements")
+      .where("status", whereIn: ["active"])
+      .where("hasPostedByUser", isEqualTo: true)
+      .snapshots();
 
   @override
   void initState() {
