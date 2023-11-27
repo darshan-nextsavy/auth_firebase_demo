@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:auth_firebase_demo/contoller/global_controller.dart';
+import 'package:auth_firebase_demo/screens/requirement/insta_mojo_screen.dart';
 import 'package:auth_firebase_demo/screens/requirement/user_requested_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -89,7 +90,8 @@ class _DashboardState extends State<Dashboard> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Get.to(const UserRequestedPage());
+          Get.to(const InstaMojoScreen());
+          // Get.to(const UserRequestedPage());
         },
         child: Icon(Icons.add),
       ),
