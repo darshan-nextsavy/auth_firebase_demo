@@ -21,6 +21,9 @@ class _AddRequirementState extends State<AddRequirement> {
 
   bool isEverythingOk = false;
 
+  List<TextEditingController> stopsTextControllerList = [];
+  List<String> stopsList = [];
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -147,6 +150,30 @@ class _AddRequirementState extends State<AddRequirement> {
               textCapitalization: TextCapitalization.words,
             ),
           ),
+          ...stopsList.asMap().entries.map((ele) {
+            int index = ele.key;
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                onChanged: (val) {
+                  stopsList[index] = val;
+                },
+                decoration: InputDecoration(
+                  labelText: "Stop ${index + 1}",
+                  border: const OutlineInputBorder(),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+            );
+          }).toList(),
+          TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  stopsList.add("");
+                });
+              },
+              icon: const Icon(Icons.add),
+              label: const Text("Add Stops")),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextFormField(
