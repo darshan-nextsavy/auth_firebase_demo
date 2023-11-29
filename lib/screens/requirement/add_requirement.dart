@@ -1,5 +1,6 @@
 import 'package:auth_firebase_demo/contoller/global_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -131,6 +132,8 @@ class _AddRequirementState extends State<AddRequirement> {
     }
   }
 
+  int _ratingController = 1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,6 +142,20 @@ class _AddRequirementState extends State<AddRequirement> {
       ),
       body: ListView(
         children: [
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: DropDownTextField(
+                textFieldDecoration: InputDecoration(
+                  labelText: "Source",
+                  border: OutlineInputBorder(),
+                ),
+                enableSearch: true,
+                dropDownList: [
+                  DropDownValueModel(name: 'name1', value: "value1"),
+                  DropDownValueModel(name: 'name2', value: "value2"),
+                  DropDownValueModel(name: 'name3', value: "value3"),
+                ]),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextFormField(
@@ -154,15 +171,31 @@ class _AddRequirementState extends State<AddRequirement> {
             int index = ele.key;
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                onChanged: (val) {
-                  stopsList[index] = val;
-                },
-                decoration: InputDecoration(
-                  labelText: "Stop ${index + 1}",
-                  border: const OutlineInputBorder(),
-                ),
-                textCapitalization: TextCapitalization.words,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      onChanged: (val) {
+                        stopsList[index] = val;
+                      },
+                      decoration: InputDecoration(
+                        labelText: "Stop ${index + 1}",
+                        border: const OutlineInputBorder(),
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                    ),
+                  ),
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          stopsList.removeAt(index);
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.remove_circle,
+                        color: Colors.red,
+                      ))
+                ],
               ),
             );
           }).toList(),
