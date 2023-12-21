@@ -32,6 +32,7 @@ class _PostScreenState extends State<PostScreen> {
     if (postText.text.trim() != '') {
       try {
         FirebaseDatabase.addPost(Post(
+            status: false,
             text: postText.text.trim(),
             uid: user!.uid,
             timestamp: DateTime.now().microsecondsSinceEpoch));

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auth_firebase_demo/firebase/firebase_database.dart';
 import 'package:auth_firebase_demo/screens/utils/time.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,6 +13,91 @@ class TimeLineScreen extends StatefulWidget {
 }
 
 class _TimeLineScreenState extends State<TimeLineScreen> {
+  final StreamController<List<DocumentSnapshot>> _streamController =
+      StreamController<List<DocumentSnapshot>>();
+  ScrollController scrollController = ScrollController();
+  final List<DocumentSnapshot> _posts = [];
+
+  bool _isRequesting = false;
+  bool _isFinish = false;
+
+  void onChangeData(List<DocumentChange> documentChanges) {
+    var isChange = false;
+    documentChanges.forEach((postChange) {
+      if (postChange.type == DocumentChangeType.modified) {
+        int indexWhere = _posts.indexWhere((product) {
+          return postChange.doc.id == product.id;
+        });
+
+        if (indexWhere >= 0) {
+          _posts[indexWhere] = postChange.doc;
+        }
+        isChange = true;
+      }
+    });
+
+    if (isChange) {
+      _streamController.add(_posts);
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('posts')
+        .snapshots()
+        .listen((data) => onChangeData(data.docChanges));
+    requestNextPage();
+    scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    if (scrollController.offset >= scrollController.position.maxScrollExtent &&
+        !scrollController.position.outOfRange) {
+      print("at the end of list");
+      requestNextPage();
+    }
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _streamController.close();
+
+    super.dispose();
+  }
+
+  void requestNextPage() async {
+    if (!_isRequesting && !_isFinish) {
+      QuerySnapshot querySnapshot;
+      _isRequesting = true;
+      if (_posts.isEmpty) {
+        querySnapshot =
+            await FirebaseFirestore.instance.collection('posts').limit(3).get();
+      } else {
+        querySnapshot = await FirebaseFirestore.instance
+            .collection('posts')
+            .startAfterDocument(_posts[_posts.length - 1])
+            .limit(3)
+            .get();
+      }
+
+      if (querySnapshot != null) {
+        int oldSize = _posts.length;
+        _posts.addAll(querySnapshot.docs);
+        int newSize = _posts.length;
+        if (oldSize != newSize) {
+          _streamController.add(_posts);
+        } else {
+          _isFinish = true;
+        }
+      }
+      _isRequesting = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,26 +109,32 @@ class _TimeLineScreenState extends State<TimeLineScreen> {
       ),
       body: Container(
         padding: const EdgeInsets.all(16),
-        child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseDatabase.getPosts(),
-            builder: (context, snapshot) {
-              QuerySnapshot? querySnapshot = snapshot.data;
+        // child: StreamBuilder<QuerySnapshot>(
+        child: StreamBuilder<List<DocumentSnapshot>>(
+            // stream: FirebaseDatabase.getPosts(),
+            stream: _streamController.stream,
+            builder: (context, AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+              // QuerySnapshot? querySnapshot = snapshot.data;
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
+              final querySnapshot = snapshot.data;
 
-              if (querySnapshot!.docs.isEmpty) {
+              if (querySnapshot!.isEmpty) {
                 return const Center(child: Text('No Post Listed Here'));
               }
               return ListView.builder(
-                  itemCount: querySnapshot.docs.length,
+                  controller: scrollController,
+                  itemCount: querySnapshot.length,
                   itemBuilder: (context, index) {
-                    Map<String, dynamic> data = querySnapshot.docs[index].data()
-                        as Map<String, dynamic>;
+                    Map<String, dynamic> data =
+                        querySnapshot[index].data() as Map<String, dynamic>;
+                    final docId = querySnapshot[index].id;
 
                     return Container(
+                      height: 300,
                       decoration: const BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -57,7 +150,7 @@ class _TimeLineScreenState extends State<TimeLineScreen> {
                                   .doc(data['uid'])
                                   .get(),
                               builder: (context, snapshot) {
-                                print(data['uid']);
+                                ;
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
                                   return const Text('Loading...');
@@ -90,7 +183,22 @@ class _TimeLineScreenState extends State<TimeLineScreen> {
                                         style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600),
-                                      )
+                                      ),
+                                      const SizedBox(
+                                        width: 16,
+                                      ),
+                                      data['status']
+                                          ? ElevatedButton(
+                                              onPressed: () {},
+                                              child: const Text("Requested"))
+                                          : FilledButton(
+                                              onPressed: () async {
+                                                await FirebaseFirestore.instance
+                                                    .collection('posts')
+                                                    .doc(docId)
+                                                    .update({"status": true});
+                                              },
+                                              child: const Text("Request"))
                                     ],
                                   );
                                 }

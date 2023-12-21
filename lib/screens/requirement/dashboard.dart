@@ -68,6 +68,7 @@ class _DashboardState extends State<Dashboard> {
                   }
                   if (snapshot.hasData) {
                     final docu = snapshot.data!.docs;
+                    print(docu);
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),

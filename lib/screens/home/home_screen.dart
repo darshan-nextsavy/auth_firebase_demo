@@ -18,11 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget getScreen() {
     switch (selectedScreen) {
       case 0:
-        return Dashboard();
-      // return const TimeLineScreen();
+        // return Dashboard();
+        return const TimeLineScreen();
       case 1:
-        return const AddRequirement();
-      // return const PostScreen();
+        // return const AddRequirement();
+        return const PostScreen();
       case 2:
         return const ProfileScreen();
       default:
